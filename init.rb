@@ -10,7 +10,7 @@ Redmine::Plugin.register :redmine_telegram_notifications do
   description 'Redmine Telegram Notifications'
   version '1.0'
 
-  requires_redmine :version_or_higher => '2.0.0'
+  requires_redmine :version_or_higher => '1.0.0'
 
   settings \
   :default => {
