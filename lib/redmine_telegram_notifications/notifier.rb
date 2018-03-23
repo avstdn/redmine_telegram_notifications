@@ -13,8 +13,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     params[:disable_web_page_preview] = 1
 
     if attachment
-      #msg = msg +"\r\n"
-      msg = msg +attachment[:text] if attachment[:text]
+      msg = msg + "\r\n" + attachment[:text] if attachment[:text]
       for field_item in attachment[:fields] do
         msg = msg +"\r\n"+"<b>"+field_item[:title]+":</b> "+field_item[:value]
       end
@@ -60,20 +59,20 @@ class TelegramNotifier < Redmine::Hook::Listener
     attachment[:fields] = [{
       :title => I18n.t("field_status"),
       :value => escape(issue.status.to_s),
-      :short => false
+      :short => true
     }, {
       :title => I18n.t("field_priority"),
       :value => escape(issue.priority.to_s),
-      :short => false
+      :short => true
     }, {
       :title => I18n.t("field_assigned_to"),
       :value => escape(issue.assigned_to.to_s),
-      :short => false
+      :short => true
     }]
     attachment[:fields] << {
       :title => I18n.t("field_watcher"),
       :value => escape(issue.watcher_users.join(', ')),
-      :short => false
+      :short => true
     } if Setting.plugin_redmine_telegram_notifications['display_watchers'] == 'yes'
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
