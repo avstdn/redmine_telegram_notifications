@@ -22,7 +22,7 @@ Redmine::Plugin.register :redmine_telegram_notifications do
       'new_include_description' => 1,
       'updated_include_description' => 1,
   },
-    :partial => 'view/settings'
+    :partial => 'settings/telegram_notifications'
 end
 
 
