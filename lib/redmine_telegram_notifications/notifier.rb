@@ -13,7 +13,8 @@ class TelegramNotifier < Redmine::Hook::Listener
     params[:disable_web_page_preview] = 1
 
     if attachment
-      msg = msg + "\r\nОписание:\r\n" + attachment[:text] if attachment[:text]
+      msg = msg + "\r\n<b>Описание:</b>\r\n" if attachment[:text]
+      msg = msg + attachment[:text]  if attachment[:text]
       for field_item in attachment[:fields] do
         msg = msg +"\r\n"+"<b>"+field_item[:title]+":</b> "+field_item[:value]
       end
