@@ -8,19 +8,19 @@ class TelegramNotifier < Redmine::Hook::Listener
     url = "https://api.telegram.org/bot#{token}/sendMessage"
 
     params = {}
-    params['chat_id'] = channel if channel
-    params['parse_mode'] = "HTML"
-    params['disable_web_page_preview'] = 1
+    params[:chat_id] = channel if channel
+    params[:parse_mode] = "HTML"
+    params[:disable_web_page_preview] = 1
 
     if attachment
       msg = msg +"\r\n"
-      msg = msg +attachment['text'] if attachment['text']
-      for field_item in attachment['fields'] do
-        msg = msg +"\r\n"+"<b>"+field_item['title']+":</b> "+field_item['value']
+      msg = msg +attachment[:text] if attachment[:text]
+      for field_item in attachment[:fields] do
+        msg = msg +"\r\n"+"<b>"+field_item[:title]+":</b> "+field_item[:value]
       end
     end
 
-    params['text'] = msg
+    params[:text] = msg
 
     Rails.logger.info("TELEGRAM GLOBAL SEND TO: #{channel}")
     Rails.logger.info("TELEGRAM GLOBAL TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
@@ -45,7 +45,7 @@ class TelegramNotifier < Redmine::Hook::Listener
   end
 
   def controller_issues_new_after_save(context={})
-    issue = context['issue']
+    issue = context[:issue]
     channel = channel_for_project issue.project
     token = token_for_project issue.project
     priority_id = 1
@@ -53,27 +53,27 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel
 
-    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{escape issue.author}</b> #{l('field_created_on')}"
+    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{escape issue.author}</b> #{l(:field_created_on)}"
 
     attachment = {}
-    attachment['text'] = escape issue.description if issue.description
-    attachment['fields'] = [{
-      'title' => I18n.t("field_status"),
-      'value' => escape(issue.status.to_s),
-      'short' => true
+    attachment[:text] = escape issue.description if issue.description
+    attachment[:fields] = [{
+      :title => I18n.t("field_status"),
+      :value => escape(issue.status.to_s),
+      :short => true
     }, {
-      'title' => I18n.t("field_priority"),
-      'value' => escape(issue.priority.to_s),
-      'short' => true
+      :title => I18n.t("field_priority"),
+      :value => escape(issue.priority.to_s),
+      :short => true
     }, {
-      'title' => I18n.t("field_assigned_to"),
-      'value' => escape(issue.assigned_to.to_s),
-      'short' => true
+      :title => I18n.t("field_assigned_to"),
+      :value => escape(issue.assigned_to.to_s),
+      :short => true
     }]
-    attachment['fields'] << {
-      'title' => I18n.t("field_watcher"),
-      'value' => escape(issue.watcher_users.join(', ')),
-      'short' => true
+    attachment[:fields] << {
+      :title => I18n.t("field_watcher"),
+      :value => escape(issue.watcher_users.join(', ')),
+      :short => true
     } if Setting.plugin_redmine_telegram_notifications['display_watchers'] == 'yes'
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
@@ -81,8 +81,8 @@ class TelegramNotifier < Redmine::Hook::Listener
   end
 
   def controller_issues_edit_after_save(context={})
-    issue = context['issue']
-    journal = context['journal']
+    issue = context[:issue]
+    journal = context[:journal]
     channel = channel_for_project issue.project
     token = token_for_project issue.project
     priority_id = 1
@@ -90,11 +90,11 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
 
-    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{journal.user.to_s}</b> #{l('field_updated_on')}"
+    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{journal.user.to_s}</b> #{l(:field_updated_on)}"
 
     attachment = {}
-    attachment['text'] = escape journal.notes if journal.notes
-    attachment['fields'] = journal.details.map { |d| detail_to_field d }
+    attachment[:text] = escape journal.notes if journal.notes
+    attachment[:fields] = journal.details.map { |d| detail_to_field d }
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
 
@@ -109,15 +109,15 @@ private
     if Setting.host_name.to_s =~ /\A(https?\:\/\/)?(.+?)(\:(\d+))?(\/.+)?\z/i
       host, port, prefix = $2, $4, $5
       Rails.application.routes.url_for(obj.event_url({
-        'host' => host,
-        'protocol' => Setting.protocol,
-        'port' => port,
-        'script_name' => prefix
+        :host => host,
+        :protocol => Setting.protocol,
+        :port => port,
+        :script_name => prefix
       }))
     else
       Rails.application.routes.url_for(obj.event_url({
-        'host' => Setting.host_name,
-        'protocol' => Setting.protocol
+        :host => Setting.host_name,
+        :protocol => Setting.protocol
       }))
     end
   end
@@ -154,7 +154,7 @@ private
       title = key
     elsif detail.property == "attachment"
       key = "attachment"
-      title = I18n.t 'label_attachment'
+      title = I18n.t :label_attachment
     else
       key = detail.prop_key.to_s.sub("_id", "")
       title = I18n.t "field_#{key}"
@@ -197,8 +197,8 @@ private
 
     value = " - " if value.empty?
 
-    result = { 'title' => title, 'value' => value }
-    result['short'] = true if short
+    result = { :title => title, :value => value }
+    result[:short] = true if short
     result
   end
 
