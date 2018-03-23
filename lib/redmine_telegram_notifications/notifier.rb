@@ -4,7 +4,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
   def speak(msg, channel, attachment=nil, token=nil)
     
-    token = Setting.plugin_redmine_telegram_global['telegram_bot_token'] if not token
+    token = Setting.plugin_redmine_telegram_notifications['telegram_bot_token'] if not token
     url = "https://api.telegram.org/bot#{token}/sendMessage"
 
     params = {}
@@ -49,11 +49,11 @@ class TelegramNotifier < Redmine::Hook::Listener
     channel = channel_for_project issue.project
     token = token_for_project issue.project
     priority_id = 1
-    priority_id = Setting.plugin_redmine_telegram_global['priority_id_add'].to_i if Setting.plugin_redmine_telegram_global['priority_id_add'].present?
+    priority_id = Setting.plugin_redmine_telegram_notifications['priority_id_add'].to_i if Setting.plugin_redmine_telegram_notifications['priority_id_add'].present?
 
     return unless channel
 
-    msg = "<b>[#{escape issue.project}]</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_global['auto_mentions'] == '1'}\n<b>#{escape issue.author}</b> #{l(:field_created_on)}\n"
+    msg = "<b>[#{escape issue.project}]</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{escape issue.author}</b> #{l(:field_created_on)}\n"
 
     attachment = {}
     attachment[:text] = escape issue.description if issue.description
@@ -74,7 +74,7 @@ class TelegramNotifier < Redmine::Hook::Listener
       :title => I18n.t("field_watcher"),
       :value => escape(issue.watcher_users.join(', ')),
       :short => true
-    } if Setting.plugin_redmine_telegram_global['display_watchers'] == 'yes'
+    } if Setting.plugin_redmine_telegram_notifications['display_watchers'] == 'yes'
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
 
@@ -86,11 +86,11 @@ class TelegramNotifier < Redmine::Hook::Listener
     channel = channel_for_project issue.project
     token = token_for_project issue.project
     priority_id = 1
-    priority_id = Setting.plugin_redmine_telegram_global['priority_id_add'].to_i if Setting.plugin_redmine_telegram_global['priority_id_add'].present?
+    priority_id = Setting.plugin_redmine_telegram_notifications['priority_id_add'].to_i if Setting.plugin_redmine_telegram_notifications['priority_id_add'].present?
 
-    return unless channel and Setting.plugin_redmine_telegram_global['post_updates'] == '1'
+    return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
 
-    msg = "<b>[#{escape issue.project}]</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_global['auto_mentions'] == '1'}\n<b>#{journal.user.to_s}</b> #{l(:field_updated_on)}"
+    msg = "<b>[#{escape issue.project}]</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{journal.user.to_s}</b> #{l(:field_updated_on)}"
 
     attachment = {}
     attachment[:text] = escape journal.notes if journal.notes
@@ -129,7 +129,7 @@ private
 
     return [
         (proj.custom_value_for(cf).value rescue nil),
-        Setting.plugin_redmine_telegram_global['telegram_bot_token'],
+        Setting.plugin_redmine_telegram_notifications['telegram_bot_token'],
     ].find{|v| v.present?}
   end
 
@@ -140,7 +140,7 @@ private
 
     val = [
       (proj.custom_value_for(cf).value rescue nil),
-      Setting.plugin_redmine_telegram_global['channel'],
+      Setting.plugin_redmine_telegram_notifications['channel'],
     ].find{|v| v.present?}
 
     # Channel name '-' is reserved for NOT notifying
