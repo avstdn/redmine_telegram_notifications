@@ -13,7 +13,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     params[:disable_web_page_preview] = 1
 
     if attachment
-      msg = msg +"\r\n"
+      #msg = msg +"\r\n"
       msg = msg +attachment[:text] if attachment[:text]
       for field_item in attachment[:fields] do
         msg = msg +"\r\n"+"<b>"+field_item[:title]+":</b> "+field_item[:value]
@@ -53,27 +53,27 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel
 
-    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}<b>#{escape issue.author}</b> #{l(:field_created_on)}"
+    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{escape issue.author}</b> #{l(:field_created_on)}"
 
     attachment = {}
     attachment[:text] = escape issue.description if issue.description
     attachment[:fields] = [{
       :title => I18n.t("field_status"),
       :value => escape(issue.status.to_s),
-      :short => true
+      :short => false
     }, {
       :title => I18n.t("field_priority"),
       :value => escape(issue.priority.to_s),
-      :short => true
+      :short => false
     }, {
       :title => I18n.t("field_assigned_to"),
       :value => escape(issue.assigned_to.to_s),
-      :short => true
+      :short => false
     }]
     attachment[:fields] << {
       :title => I18n.t("field_watcher"),
       :value => escape(issue.watcher_users.join(', ')),
-      :short => true
+      :short => false
     } if Setting.plugin_redmine_telegram_notifications['display_watchers'] == 'yes'
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
@@ -90,7 +90,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
 
-    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}<b>#{journal.user.to_s}</b> #{l(:field_updated_on)}"
+    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{journal.user.to_s}</b> #{l(:field_updated_on)}"
 
     attachment = {}
     attachment[:text] = escape journal.notes if journal.notes
