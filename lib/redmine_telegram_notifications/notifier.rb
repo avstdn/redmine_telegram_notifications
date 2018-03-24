@@ -93,7 +93,16 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     attachment = {}
     attachment[:text] = escape journal.notes if journal.notes
-    attachment[:fields] = journal.details.map { |d| detail_to_field d }
+    # attachment[:fields] = journal.details.map { |d| detail_to_field d }
+    attachment[:fields] = [{
+      :title => I18n.t("field_status"),
+      :value => escape(issue.status.to_s),
+      :short => true
+    }, {
+      :title => I18n.t("field_assigned_to"),
+      :value => escape(issue.assigned_to.to_s),
+      :short => true
+    }]
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
 
