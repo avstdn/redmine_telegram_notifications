@@ -1,18 +1,18 @@
-# Telegram notifications for Redmine
+# Redmine's notifications to Telegram
 
 ## Installation
 
 Clone plugin:
 
-    git clone https://github.com/avstdn/redmine_telegram_notifications
+	git clone https://github.com/avstdn/redmine_telegram_notifications
 
 Install `httpclient` dependency:
 
-    bundle install
+	bundle install
 
 Make migration:
 
-    bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+	bundle exec rake redmine:plugins:migrate RAILS_ENV=production
 
 Restart Redmine.
 
@@ -22,11 +22,11 @@ Enjoy.
 
 Pull new version of plugin:
 	
-    git pull origin master
+	git pull origin master
 
 Start migration:
 
-    bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+	bundle exec rake redmine:plugins:migrate RAILS_ENV=production
 
 Restart Redmin.
 
@@ -34,7 +34,7 @@ Restart Redmin.
 
 Make migration down command:
 
-    bundle exec rake redmine:plugins:migrate NAME=redmine_telegram_notifications VERSION=0 RAILS_ENV=production
+	bundle exec rake redmine:plugins:migrate NAME=redmine_telegram_notifications VERSION=0 RAILS_ENV=production
     
 Delete plugin from Redmine plugins folder
   
