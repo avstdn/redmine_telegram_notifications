@@ -52,7 +52,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel
 
-    msg = "<b><i>#{l(:field_updated_on)}:</i></b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Дата начала:</b> #{issue[:start_date]}"
+    msg = "<b><i>#{l(:field_created_on)}:<i></b> #{escape issue.author}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Дата начала:</b> #{issue[:start_date]}"
 
     attachment = {}
     attachment[:text] = escape issue.description if !issue.description.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
