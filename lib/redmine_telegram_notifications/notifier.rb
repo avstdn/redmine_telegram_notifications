@@ -13,8 +13,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     params[:disable_web_page_preview] = 1
 
     if attachment
-      msg = msg + "\r\n<b>Описание:</b>\r\n" if attachment[:text]
-      msg = msg + attachment[:text]  if attachment[:text]
+      msg = msg + "\r\n<b>Описание:</b> " + attachment[:text] if attachment[:text]
       for field_item in attachment[:fields] do
         msg = msg +"\r\n"+"<b>"+field_item[:title]+":</b> "+field_item[:value]
       end
@@ -56,7 +55,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{escape issue.author}</b> #{l(:field_created_on)}"
 
     attachment = {}
-    attachment[:text] = escape issue.description if issue.description
+    attachment[:text] = escape issue.description if !issue.description.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
     attachment[:fields] = [{
       :title => I18n.t("field_status"),
       :value => escape(issue.status.to_s),
