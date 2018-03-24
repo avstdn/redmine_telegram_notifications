@@ -57,12 +57,13 @@ class TelegramNotifier < Redmine::Hook::Listener
     attachment = {}
     attachment[:text] = escape issue.description if !issue.description.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
     attachment[:fields] = [{
-      :title => I18n.t("field_status"),
-      :value => escape(issue.status.to_s),
-      :short => true
-    }, {
       :title => I18n.t("field_priority"),
       :value => escape(issue.priority.to_s),
+      :short => true
+
+    }, {
+      :title => I18n.t("field_status"),
+      :value => escape(issue.status.to_s),
       :short => true
     }, {
       :title => I18n.t("field_assigned_to"),
