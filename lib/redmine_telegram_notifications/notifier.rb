@@ -89,7 +89,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
 
-    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Приоритет:</b> #{escape issue.priority})"
+    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Приоритет:</b> #{escape issue.priority}"
 
     attachment = {}
     attachment[:text] = escape journal.notes if journal.notes
