@@ -21,8 +21,8 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     params[:text] = msg
 
-    Rails.logger.info("TELEGRAM GLOBAL SEND TO: #{channel}")
-    Rails.logger.info("TELEGRAM GLOBAL TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
+    Rails.logger.info("TELEGRAM SEND TO: #{channel}")
+    Rails.logger.info("TELEGRAM TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
 
     Thread.new do
       retries = 0
@@ -34,9 +34,9 @@ class TelegramNotifier < Redmine::Hook::Listener
         client.keep_alive_timeout = 2
         client.ssl_config.timeout = 2
         conn = client.post_async(url, params)
-        Rails.logger.info("TELEGRAM GLOBAL SEND CODE: #{conn.pop.status_code}")
+        Rails.logger.info("TELEGRAM SEND CODE: #{conn.pop.status_code}")
       rescue Exception => e
-        Rails.logger.warn("TELEGRAM GLOBAL CANNOT CONNECT TO #{url} RETRY ##{retries}, ERROR #{e}")
+        Rails.logger.warn("TELEGRAM CANNOT CONNECT TO #{url} RETRY ##{retries}, ERROR #{e}")
         retry if (retries += 1) < 5
       end
     end
@@ -52,7 +52,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel
 
-    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{escape issue.author}</b> #{l(:field_created_on)}"
+    msg = "<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>#{escape issue.author}:</b> #{l(:field_created_on)}\n<b>Дата начала:</b> #{issue[:start_date]}"
 
     attachment = {}
     attachment[:text] = escape issue.description if !issue.description.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
