@@ -119,7 +119,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel and Setting.plugin_redmine_telegram_notifications['post_agile_updates'] == '1'
 
-    msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
+    msg = "<b>Доска задач Agile</b>\n<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
     
     attachment = {}
     attachment[:text] = escape journal.notes if !journal.notes.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
