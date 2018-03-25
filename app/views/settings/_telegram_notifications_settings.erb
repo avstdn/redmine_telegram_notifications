@@ -20,13 +20,17 @@
 </p>
 
 <p>
-	<label for="settings_new_include_description">Показывать описание в новой задаче</label>
+	<label for="settings_new_include_description">Показывать описание в задаче</label>
 	<input type="checkbox" id="settings_new_include_description" value="1" name="settings[new_include_description]" <%= settings['new_include_description'] == '1' ? 'checked="checked"' : '' %> />
 </p>
 
 <p>
-	<label for="settings_post_updates">Слать уведомления об обновленных задачах</label>
+	<label for="settings_post_updates">Получать уведомления об обновленных задачах</label>
 	<input type="checkbox" id="settings_post_updates" value="1" name="settings[post_updates]" <%= settings['post_updates'] == '1' ? 'checked="checked"' : '' %> />
+</p>
+<p>
+	<label for="settings_post_updates">Получать уведомления о перемещении задач в Agile</label>
+	<input type="checkbox" id="settings_post_agile_updates" value="1" name="settings[post_agile_updates]" <%= settings['post_agile_updates'] == '1' ? 'checked="checked"' : '' %> />
 </p>
 
 <p>
