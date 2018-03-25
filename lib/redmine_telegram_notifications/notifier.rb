@@ -25,7 +25,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     Rails.logger.info("TELEGRAM TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
 
     Thread.new do
-      retries = 0
+      #retries = 0
       begin
         client = HTTPClient.new
         client.connect_timeout = 2
@@ -93,36 +93,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
 
     attachment = {}
-    attachment[:text] = escape journal.notes if journal.notes
-    # attachment[:fields] = journal.details.map { |d| detail_to_field d }
-    attachment[:fields] = [{
-      :title => I18n.t("field_status"),
-      :value => escape(issue.status.to_s),
-      :short => true
-    }, {
-      :title => I18n.t("field_assigned_to"),
-      :value => escape(issue.assigned_to.to_s),
-      :short => true
-    }]
-
-    speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
-
-  end
-
-  def controller_issues_edit_after_save(context={})
-    issue = context[:issue]
-    journal = context[:journal]
-    channel = channel_for_project issue.project
-    token = token_for_project issue.project
-    priority_id = 1
-    priority_id = Setting.plugin_redmine_telegram_notifications['priority_id_add'].to_i if Setting.plugin_redmine_telegram_notifications['priority_id_add'].present?
-
-    return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
-
-    msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
-
-    attachment = {}
-    attachment[:text] = escape journal.notes if journal.notes
+    attachment[:text] = escape journal.notes if !journal.notes.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
     # attachment[:fields] = journal.details.map { |d| detail_to_field d }
     attachment[:fields] = [{
       :title => I18n.t("field_status"),
@@ -151,7 +122,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
     
     attachment = {}
-    attachment[:text] = escape journal.notes if journal.notes
+    attachment[:text] = escape journal.notes if !journal.notes.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
     attachment[:fields] = [{
       :title => I18n.t("field_status"),
       :value => escape(issue.status.to_s),
