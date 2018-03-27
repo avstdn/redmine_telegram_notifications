@@ -54,6 +54,15 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     msg = "<b>#{l(:field_created_on)}:</b> #{escape issue.author}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Дата начала:</b> #{issue[:start_date]}"
 
+
+    userId = User.find_by id: issue.assigned_to.id if issue.assigned_to.present?
+    telegramLogin = userId.custom_value_for(CustomField.find_by type: "UserCustomField").to_s if userId.present?
+    assignedTo = issue.assigned_to.to_s
+
+    if telegramLogin.present?
+      assignedTo += "\naka @#{telegramLogin.to_s}"
+    end
+
     attachment = {}
     attachment[:text] = escape issue.description if !issue.description.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
     attachment[:fields] = [{
@@ -68,7 +77,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     attachment[:fields] << {
       :title => I18n.t("field_assigned_to"),
-      :value => escape(issue.assigned_to.to_s),
+      :value => escape("#{assignedTo}"),
       :short => true
     } if !issue.assigned_to.to_s.empty?
 
@@ -119,32 +128,34 @@ class TelegramNotifier < Redmine::Hook::Listener
 
   end
 
-  # def controller_agile_boards_update_after_save(context={})
-  #   issue = context[:issue]
-  #   journal = issue.journals.last
-  #   channel = channel_for_project issue.project
-  #   token = token_for_project issue.project
-  #   priority_id = 1
-  #   priority_id = Setting.plugin_redmine_telegram_notifications['priority_id_add'].to_i if Setting.plugin_redmine_telegram_notifications['priority_id_add'].present?
+=begin
+  def controller_agile_boards_update_after_save(context={})
+    issue = context[:issue]
+    journal = issue.journals.last
+    channel = channel_for_project issue.project
+    token = token_for_project issue.project
+    priority_id = 1
+    priority_id = Setting.plugin_redmine_telegram_notifications['priority_id_add'].to_i if Setting.plugin_redmine_telegram_notifications['priority_id_add'].present?
 
-  #   return unless channel and Setting.plugin_redmine_telegram_notifications['post_agile_updates'] == '1'
+    return unless channel and Setting.plugin_redmine_telegram_notifications['post_agile_updates'] == '1'
 
-  #   msg = "<b>Доска задач Agile</b>\n<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
+    msg = "<b>Доска задач Agile</b>\n<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
     
-  #   attachment = {}
-  #   attachment[:text] = escape journal.notes if !journal.notes.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
-  #   attachment[:fields] = [{
-  #     :title => I18n.t("field_status"),
-  #     :value => escape(issue.status.to_s),
-  #     :short => true
-  #   }, {
-  #     :title => I18n.t("field_assigned_to"),
-  #     :value => escape(issue.assigned_to.to_s),
-  #     :short => true
-  #   }]
+    attachment = {}
+    attachment[:text] = escape journal.notes if !journal.notes.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
+    attachment[:fields] = [{
+      :title => I18n.t("field_status"),
+      :value => escape(issue.status.to_s),
+      :short => true
+    }, {
+      :title => I18n.t("field_assigned_to"),
+      :value => escape(issue.assigned_to.to_s),
+      :short => true
+    }]
 
-  #   speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
-  # end
+    speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
+  end
+=end
 
 private
   def escape(msg)
