@@ -125,10 +125,8 @@ class TelegramNotifier < Redmine::Hook::Listener
     }]
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
-
   end
 
-=begin
   def controller_agile_boards_update_after_save(context={})
     issue = context[:issue]
     journal = issue.journals.last
@@ -155,7 +153,6 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
   end
-=end
 
 private
   def escape(msg)
