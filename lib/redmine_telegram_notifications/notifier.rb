@@ -16,7 +16,7 @@ class TelegramNotifier < Redmine::Hook::Listener
       for field_item in attachment[:fields] do
         msg = msg +"\r\n"+"<b>"+field_item[:title]+":</b> "+field_item[:value]
       end
-      msg = msg + "\r\n<b>Описание:</b> " + attachment[:text] if attachment[:text]
+      msg = msg + "\r\n<b>Комментарий:</b> " + attachment[:text] if attachment[:text]
     end
 
     params[:text] = msg
@@ -60,11 +60,16 @@ class TelegramNotifier < Redmine::Hook::Listener
     assignedTo = issue.assigned_to.to_s
 
     if telegramLogin.present?
-      assignedTo += "\naka @#{telegramLogin.to_s}"
+      assignedTo += " (@#{telegramLogin.to_s})"
     end
 
     attachment = {}
-    attachment[:text] = escape issue.description if !issue.description.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
+
+    if !issue.description.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
+      if issue.description.to_s.length > 255 then comment =  escape issue.description[0..255] + ' (...)' else comment =  issue.description end
+      attachment[:text] = comment.squish
+    end
+
     attachment[:fields] = [{
       :title => I18n.t("field_priority"),
       :value => escape(issue.priority.to_s),
@@ -124,19 +129,23 @@ class TelegramNotifier < Redmine::Hook::Listener
     return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
 
     msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}\n<b>Дата обновления:</b> #{updatedAt}"
-    
+
     userId = User.find_by id: issue.assigned_to.id if issue.assigned_to.present?
     telegramLogin = userId.custom_value_for(CustomField.find_by type: "UserCustomField").to_s if userId.present?
     assignedTo = issue.assigned_to.to_s
     newAssignee = issue.assigned_to.id if issue.assigned_to
 
     if telegramLogin.present?
-      assignedTo += "\naka @#{telegramLogin.to_s}"
+      assignedTo += " (@#{telegramLogin.to_s})"
     end
 
     attachment = {}
-    attachment[:text] = escape journal.notes if !journal.notes.empty? and Setting.plugin_redmine_telegram_notifications['new_include_description']
-    # attachment[:fields] = journal.details.map { |d| detail_to_field d }
+
+    if !journal.notes.empty? and Setting.plugin_redmine_telegram_notifications['update_include_description']
+      if journal.notes.to_s.length > 255 then comment =  escape journal.notes[0..255] + ' (...)' else comment =  escape journal.notes end
+      attachment[:text] = comment.squish
+    end
+
     attachment[:fields] = [{
       :title => I18n.t("field_status"),
       :value => escape(issue.status.to_s),
@@ -149,7 +158,6 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     speak msg, channel, attachment, token if !(@oldAssignee == newAssignee)
 
-    @oldAssignee = nil
   end
 
 =begin
