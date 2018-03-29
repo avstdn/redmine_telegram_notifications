@@ -22,7 +22,7 @@ Enjoy.
 
 Pull new version of plugin:
 	
-	git pull origin master
+	git pull
 
 Start migration:
 
