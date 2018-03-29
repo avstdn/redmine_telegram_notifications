@@ -25,7 +25,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     Rails.logger.info("TELEGRAM TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
 
     Thread.new do
-      #retries = 0
+      retries = 0
       begin
         client = HTTPClient.new
         client.connect_timeout = 2
@@ -37,7 +37,7 @@ class TelegramNotifier < Redmine::Hook::Listener
         Rails.logger.info("TELEGRAM SEND CODE: #{conn.pop.status_code}")
       rescue Exception => e
         Rails.logger.warn("TELEGRAM CANNOT CONNECT TO #{url} RETRY ##{retries}, ERROR #{e}")
-        #retry if (retries += 1) < 5
+        retry if (retries += 1) < 5
       end
     end
 
@@ -47,13 +47,10 @@ class TelegramNotifier < Redmine::Hook::Listener
     issue = context[:issue]
     channel = channel_for_project issue.project
     token = token_for_project issue.project
-    priority_id = 1
-    priority_id = Setting.plugin_redmine_telegram_notifications['priority_id_add'].to_i if Setting.plugin_redmine_telegram_notifications['priority_id_add'].present?
 
     return unless channel
 
-    msg = "<b>#{l(:field_created_on)}:</b> #{escape issue.author}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Дата начала:</b> #{issue[:start_date]}"
-
+    msg = "<b>#{l(:field_created_on)}:</b> #{escape issue.author}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}"
 
     userId = User.find_by id: issue.assigned_to.id if issue.assigned_to.present?
     telegramLogin = userId.custom_value_for(CustomField.find_by type: "UserCustomField").to_s if userId.present?
@@ -87,25 +84,47 @@ class TelegramNotifier < Redmine::Hook::Listener
       :short => true
     } if Setting.plugin_redmine_telegram_notifications['display_watchers'] == 'yes'
 
-    speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
+    speak msg, channel, attachment, token if !issue.assigned_to.to_s.empty?
 
+  end
+
+  def controller_issues_edit_before_save(context={})
+    issue = context[:issue]
+    # journalAssignee = JournalDetail.find_by prop_key: 'assigned_to_id', journal_id: issue.last_journal_id
+    # @oldAssignee = User.find(journalAssignee.value).id if journalAssignee and journalAssignee.value.present?
+    @oldAssignee = Issue.find(issue.id).attributes["assigned_to_id"]
+
+    Rails.logger.info("\n")
+    # Rails.logger.info("available_columns: #{available_columns}")
+    # Rails.logger.info("field_values:#{field_values}")
+    # Rails.logger.info("journalAssignee.inspect: #{journalAssignee.inspect}")
+    # Rails.logger.info("issue.last_journal_id: #{issue.last_journal_id}")
+    # Rails.logger.info("@oldAssignee: #{@oldAssignee}")
+    Rails.logger.info("\n")
   end
 
   def controller_issues_edit_after_save(context={})
     issue = context[:issue]
     journal = context[:journal]
+
+    Rails.logger.info("\n")
+    # Rails.logger.info("journalAssignee.inspect: #{journalAssignee.inspect}")
+    # Rails.logger.info("issue.last_journal_id: #{issue.last_journal_id}")
+    # Rails.logger.info("@oldAssignee: #{@oldAssignee}")
+    # Rails.logger.info("issue.assigned_to.id: #{issue.assigned_to.id}") if issue.assigned_to
+    Rails.logger.info("\n")
+
     channel = channel_for_project issue.project
     token = token_for_project issue.project
-    priority_id = 1
-    priority_id = Setting.plugin_redmine_telegram_notifications['priority_id_add'].to_i if Setting.plugin_redmine_telegram_notifications['priority_id_add'].present?
 
     return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
 
     msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
-
+    
     userId = User.find_by id: issue.assigned_to.id if issue.assigned_to.present?
     telegramLogin = userId.custom_value_for(CustomField.find_by type: "UserCustomField").to_s if userId.present?
     assignedTo = issue.assigned_to.to_s
+    newAssignee = issue.assigned_to.id if issue.assigned_to
 
     if telegramLogin.present?
       assignedTo += "\naka @#{telegramLogin.to_s}"
@@ -124,9 +143,12 @@ class TelegramNotifier < Redmine::Hook::Listener
       :short => true
     }]
 
-    speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
+    speak msg, channel, attachment, token if !(@oldAssignee == newAssignee)
+
+    @oldAssignee = nil
   end
 
+=begin
   def controller_agile_boards_update_after_save(context={})
     issue = context[:issue]
     journal = issue.journals.last
@@ -161,6 +183,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     speak msg, channel, attachment, token if issue.priority_id.to_i >= priority_id
   end
+=end
 
 private
   def escape(msg)
