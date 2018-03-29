@@ -25,7 +25,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     Rails.logger.info("TELEGRAM TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
 
     Thread.new do
-      retries = 0
+      # retries = 0
       begin
         client = HTTPClient.new
         client.connect_timeout = 2
@@ -37,7 +37,7 @@ class TelegramNotifier < Redmine::Hook::Listener
         Rails.logger.info("TELEGRAM SEND CODE: #{conn.pop.status_code}")
       rescue Exception => e
         Rails.logger.warn("TELEGRAM CANNOT CONNECT TO #{url} RETRY ##{retries}, ERROR #{e}")
-        retry if (retries += 1) < 5
+        # retry if (retries += 1) < 5
       end
     end
 
