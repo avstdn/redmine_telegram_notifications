@@ -47,10 +47,13 @@ class TelegramNotifier < Redmine::Hook::Listener
     issue = context[:issue]
     channel = channel_for_project issue.project
     token = token_for_project issue.project
+    createdAt = issue[:created_on].in_time_zone(ActiveSupport::TimeZone.new("Moscow")).to_s[0, 19]
+
+    Rails.logger.info("\n")
 
     return unless channel
 
-    msg = "<b>#{l(:field_created_on)}:</b> #{escape issue.author}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}"
+    msg = "<b>#{l(:field_created_on)}:</b> #{escape issue.author}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions issue.description if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Дата начала:</b> #{createdAt}"
 
     userId = User.find_by id: issue.assigned_to.id if issue.assigned_to.present?
     telegramLogin = userId.custom_value_for(CustomField.find_by type: "UserCustomField").to_s if userId.present?
@@ -94,7 +97,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     # @oldAssignee = User.find(journalAssignee.value).id if journalAssignee and journalAssignee.value.present?
     @oldAssignee = Issue.find(issue.id).attributes["assigned_to_id"]
 
-    Rails.logger.info("\n")
+    # Rails.logger.info("\n")
     # Rails.logger.info("available_columns: #{available_columns}")
     # Rails.logger.info("field_values:#{field_values}")
     # Rails.logger.info("journalAssignee.inspect: #{journalAssignee.inspect}")
@@ -106,8 +109,9 @@ class TelegramNotifier < Redmine::Hook::Listener
   def controller_issues_edit_after_save(context={})
     issue = context[:issue]
     journal = context[:journal]
+    updatedAt = issue[:updated_on].in_time_zone(ActiveSupport::TimeZone.new("Moscow")).to_s[0, 19]
 
-    Rails.logger.info("\n")
+    # Rails.logger.info("\n")
     # Rails.logger.info("journalAssignee.inspect: #{journalAssignee.inspect}")
     # Rails.logger.info("issue.last_journal_id: #{issue.last_journal_id}")
     # Rails.logger.info("@oldAssignee: #{@oldAssignee}")
@@ -119,7 +123,7 @@ class TelegramNotifier < Redmine::Hook::Listener
 
     return unless channel and Setting.plugin_redmine_telegram_notifications['post_updates'] == '1'
 
-    msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}"
+    msg = "<b>#{l(:field_updated_on)}:</b> #{journal.user.to_s}\n<b>Проект: #{escape issue.project}</b>\n<a href='#{object_url issue}'>#{escape issue}</a> #{mentions journal.notes if Setting.plugin_redmine_telegram_notifications['auto_mentions'] == '1'}\n<b>Приоритет:</b> #{escape issue.priority}\n<b>Дата обновления:</b> #{updatedAt}"
     
     userId = User.find_by id: issue.assigned_to.id if issue.assigned_to.present?
     telegramLogin = userId.custom_value_for(CustomField.find_by type: "UserCustomField").to_s if userId.present?
