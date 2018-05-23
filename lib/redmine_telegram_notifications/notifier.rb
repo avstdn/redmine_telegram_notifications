@@ -29,7 +29,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     Thread.new do
       # retries = 0
       begin
-        client = HTTPClient.new("https://t.me/socks?server=95.216.145.74&port=443&user=advcake&pass=111")
+        client = HTTPClient.new
         client.connect_timeout = 2
         client.send_timeout = 2
         client.receive_timeout = 2
