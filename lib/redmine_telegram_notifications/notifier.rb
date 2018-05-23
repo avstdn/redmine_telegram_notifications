@@ -24,7 +24,7 @@ class TelegramNotifier < Redmine::Hook::Listener
     Rails.logger.info("TELEGRAM SEND TO: #{channel}")
     Rails.logger.info("TELEGRAM TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
 
-    Rails.logger.info(params);
+    # Rails.logger.info(params);
 
     Thread.new do
       # retries = 0
