@@ -24,10 +24,12 @@ class TelegramNotifier < Redmine::Hook::Listener
     Rails.logger.info("TELEGRAM SEND TO: #{channel}")
     Rails.logger.info("TELEGRAM TOKEN EMPTY, PLEASE SET IT IN PLUGIN SETTINGS") if token.nil? || token.empty?
 
+    Rails.logger.info(params);
+
     Thread.new do
       # retries = 0
       begin
-        client = HTTPClient.new
+        client = HTTPClient.new("https://t.me/socks?server=95.216.145.74&port=443&user=advcake&pass=111")
         client.connect_timeout = 2
         client.send_timeout = 2
         client.receive_timeout = 2
@@ -146,6 +148,12 @@ class TelegramNotifier < Redmine::Hook::Listener
       attachment[:text] = comment.squish
     end
 
+    if Setting.plugin_redmine_telegram_notifications['update_on_description_add'] and !journal.notes.empty?
+      descriptionAddUpdate = true
+    else
+      descriptionAddUpdate = false
+    end
+
     attachment[:fields] = [{
       :title => I18n.t("field_status"),
       :value => escape(issue.status.to_s),
@@ -156,7 +164,7 @@ class TelegramNotifier < Redmine::Hook::Listener
       :short => true
     }]
 
-    speak msg, channel, attachment, token if !(@oldAssignee == newAssignee)
+    speak msg, channel, attachment, token if !(@oldAssignee == newAssignee) or descriptionAddUpdate
 
   end
 
