@@ -28,7 +28,7 @@ Start migration:
 
 	bundle exec rake redmine:plugins:migrate RAILS_ENV=production
 
-Restart Redmin.
+Restart Redmine.
 
 ## Uninstall
 
